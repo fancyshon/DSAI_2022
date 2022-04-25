@@ -99,7 +99,7 @@ if __name__ == '__main__':
     LR = 0.001
 
     device = 'cpu'
-    if torch.cuda.is_available(): # 若想使用 cuda 且可以使用 cuda
+    if torch.cuda.is_available(): 
         device = 'cuda'
 
     print('Using %s'%device)
@@ -169,9 +169,9 @@ if __name__ == '__main__':
 
     # Test
 
-    plt.plot([(i*open_std)+open_mean for i in preds[:100]],'r',label='Prediction')
-    plt.plot([(i*open_std)+open_mean for i in targets[:100]],'b',label='Real data')
-    plt.show()
+    # plt.plot([(i*open_std)+open_mean for i in preds[:100]],'r',label='Prediction')
+    # plt.plot([(i*open_std)+open_mean for i in targets[:100]],'b',label='Real data')
+    # plt.show()
 
     # Test data
     test_data=pd.read_csv('testing.csv',header=None)
