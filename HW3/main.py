@@ -1,6 +1,5 @@
 # You should not modify this part.
 import datetime
-from stat import FILE_ATTRIBUTE_COMPRESSED
 import torch
 import pandas as pd
 import numpy as np
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     # print(g_input.size())
 
     g_model.eval()
-    # c_model.eval()
+    c_model.eval()
     with torch.no_grad():
         g_pred = g_model(g_input.to(device)).squeeze().tolist()
         c_pred = c_model(c_input.to(device)).squeeze().tolist()
@@ -93,6 +92,7 @@ if __name__ == "__main__":
     date = lastdate + datetime.timedelta(days=1)
     date = date.strftime("%Y-%m-%d")
     data=[]
+    # print(date)
     for i in range(24):
         # if c_pred[i]>=1.75:
         #     c_pred[i]*=1.5
