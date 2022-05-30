@@ -3,8 +3,24 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cu113"
+verify_ssl = true
+name = "downloadpytorch"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu113"
+verify_ssl = true
+name = "downloadpytorch"
+
 [packages]
-pandas = "==1.2.0"
+torch = {version = "*", index = "downloadpytorch"}
+pandas = "*"
+torchvision = "*"
+torchaudio = "*"
+tqdm = "*"
+matplotlib = "*"
+sklearn = "*"
 
 [dev-packages]
 
