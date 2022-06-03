@@ -8,11 +8,6 @@ url = "https://download.pytorch.org/whl/cu113"
 verify_ssl = true
 name = "downloadpytorch"
 
-[[source]]
-url = "https://download.pytorch.org/whl/cu113"
-verify_ssl = true
-name = "downloadpytorch"
-
 [packages]
 torch = {version = "*", index = "downloadpytorch"}
 pandas = "*"

@@ -84,7 +84,6 @@ if __name__ == "__main__":
     c_pred = [i*c_std+c_mean for i in c_pred]
 
     # print(g_pred)
-
     # print(bidresult.empty)
 
     date = np.array(pd.read_csv(args.consumption, header=None))[-1,0]
@@ -99,13 +98,13 @@ if __name__ == "__main__":
 
         if g_pred[i] > c_pred[i]:
             # Generation more
-            temp=[date+" "+"%02d:00:00"%i, "sell", 2.2, g_pred[i]-c_pred[i]]
+            temp=[date+" "+"%02d:00:00"%i, "sell", 2.20, round(g_pred[i]-c_pred[i],2)]
         elif g_pred[i] < c_pred[i]:
-            temp=[date+" "+"%02d:00:00"%i, "sell", 2.6, g_pred[i]]
-            temp2=[date+" "+"%02d:00:00"%i, "buy", 2.5, c_pred[i]-g_pred[i]]
+            temp=[date+" "+"%02d:00:00"%i, "sell", 2.60, round(g_pred[i],2)]
+            temp2=[date+" "+"%02d:00:00"%i, "buy", 2.50, round(c_pred[i]-g_pred[i],2)]
             data.append(temp2)
         else:
-            temp=[date+" "+"%02d:00:00"%i, "buy", 0.0, 0.0]
+            temp=[date+" "+"%02d:00:00"%i, "buy", 0.00, 0.00]
 
         # temp=[str(tomorrow)+" "+"%02d:00:00"%i, "", 0.0, 0.0]
         data.append(temp)
