@@ -69,7 +69,7 @@ class LSTM(torch.nn.Module):
 
 **Consumption**
 
-![img](https://github.com/fancyshon/DSAI_2022/tree/main/HW3/readme_img/consumption.png?raw=true)
+![img](https://github.com/fancyshon/DSAI_2022/blob/main/HW3/readme_img/consumption.png?raw=true)
 
 可以看到在generation的部分大致上是準確的，因此generation直接使用訓練結果的模型，而在consumption的部分則是可以預測到波動，低點大致符合，但在高點的地方預測出來的值要比實際的數據來的小，因此我決定在當數據高過一定的值後將其乘上倍數放大來當最後結果。
 
