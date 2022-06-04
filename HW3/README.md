@@ -1,60 +1,84 @@
-# DSAI-HW3-2021
+# DSAI-HW3-2022
 
-### Source
+## Introduction
 
-  - [Slide](https://docs.google.com/presentation/d/1JW27_5HXYZhqWmgvDhtXBaFTOfksO_dS/edit#slide=id.p1)
-  - [Dashboard](https://docs.google.com/spreadsheets/d/1cjhQewnXT2IbmYkGXRYNC5PlGRafcbVprCjgSFyDAaU/edit?pli=1#gid=0)
+- You will act as a house owner.
+- You'll generate and consume power.
+- You can decide to buy or sell the power from the microgrid through a local power trading platform.
+- **Goal** : Design an agent for bidding power to minimize your electricity bill.
 
-### Rules
+## Data
+1. 50 households synthetic data
+2. Hourly Power consumption (kWh)
+3. Hourly Solar Power generation (kWh)
+4. Hourly Bidding records
+5. 12 months of data
+   - 8 months for training
+   - 1 months for validation
+   - 3 months for testing
 
-- SFTP
+## Idea
 
+### Data preprocess
+將得到的50戶發電用電量先平均，在用標準差與平均去做標準化
+```
+for i in range(50):
+    path='training_data/target{}.csv'.format(i)
+    x = pd.read_csv(path)
+    x = x.drop('time', axis=1)
+    temp.append(x)
+    if i == 0:
+        train_data = x
+    else:
+        train_data += x
+
+# train_data = pd.concat(temp,ignore_index=True)
+train_data/=50
+normalized_data=train_data.apply(lambda x:(x-x.mean())/ x.std())
 ```
 
-┣━ upload/
-┗━ download/
-   ┣━ information/
-   ┃  ┗━ info-{mid}.csv
-   ┣━ student/
-   ┃  ┗━ {student_id}/
-   ┃     ┣━ bill-{mid}.csv
-   ┃     ┗━ bidresult-{mid}.csv
-   ┗━ training_data/
-      ┗━ target{household}.csv  
-      
+### Model
+```
+class LSTM(torch.nn.Module):
+    def __init__(self, input=24, hidden_size=8, output=24):
+        # Input of LSTM : batch, sequence_len, input_size
+        super(LSTM, self).__init__()
+
+        self.rnn = torch.nn.LSTM(
+            input, hidden_size, num_layers=2, dropout=0.05, batch_first=True)
+        self.linear = torch.nn.Linear(hidden_size, output)
+
+    def forward(self, x):
+        out, (hidden, cell) = self.rnn(x)
+        a, b, c = hidden.shape
+        # print(hidden.reshape(a*b,c).shape)
+        # out = self.linear(hidden.reshape(a*b,c))
+        out = self.linear(out[:, -1, :])
+
+        return out
 ```
 
-1. `mid` 為每次媒合編號
-2. `household` 為住戶編號，共 50 組
-3. 請使用發給組長的帳號密碼，將檔案上傳至 `upload/`
-4. 相關媒合及投標資訊皆在 `download/` 下可以找到，可自行下載使用
+### Prediction
+根據這次作業的需求，利用前7天的數據去預測第8天的產電量與耗電量，訓練是也是照個7:1的資料下去訓練。
 
+下圖是訓練的結果
 
-- File
+**Generation**
 
-```
+![img](https://github.com/fancyshon/DSAI_2022/tree/main/HW3/readme_img/generation.png)
 
-┗━ {student_id}-{version}.zip
-   ┗━ {student_id}-{version}/
-      ┣━ Pipfile
-      ┣━ Pipfile.lock
-      ┣━ main.py
-      ┗━ {model_name}.hdf5
+**Consumption**
 
-```
+![img](https://github.com/fancyshon/DSAI_2022/tree/main/HW3/readme_img/consumption.png)
 
-1. 請務必遵守上述的架構進行上傳 (model 不一定要有)
-2. 檔案壓縮請使用 `zip`，套件管理請使用 `pipenv`，python 版本請使用 `3.8`
-3. 檔名：{學號}-{版本號}.zip，例：`E11111111-v1.zip`
-4. 兩人一組請以組長學號上傳
-5. 傳新檔案時請往上加版本號，程式會自動讀取最大版本
-6. 請儲存您的模型，不要重新訓練
+可以看到在generation的部分大致上是準確的，因此generation直接使用訓練結果的模型，而在consumption的部分則是可以預測到波動，低點大致符合，但在高點的地方預測出來的值要比實際的數據來的小，因此我決定在當數據高過一定的值後將其乘上倍數放大來當最後結果。
 
-- Bidding
-
-1. 所有輸入輸出的 csv 皆包含 header
-2. 請注意輸入的 `bidresult` 資料初始值為空
-3. 輸出時間格式為 `%Y-%m-%d %H:%M:%S` ，請利用三份輸入的 data 自行選一份，往後加一天即為輸出時間  
-   例如: 輸入 `2018-08-25 00:00:00 ~ 2018-08-31 23:00:00` 的資料，請輸出 `2018-09-01 00:00:00 ~ 2018-09-01 23:00:00` 的資料(一次輸出`一天`，每筆單位`一小時`)
-4. 程式每次執行只有 `120 秒`，請控制好您的檔案執行時間
-5. 每天的交易量限制 `100 筆`，只要有超出會全部交易失敗，請控制輸出數量
+### Strategy
++ 產電量 > 耗電量
+   + 將多餘的電用比台電低價個賣出
++ 產電量 < 耗電量
+   - 將產的電用比台電高一些的價格掛賣單
+   + 將耗電量減去產電量並以低台電一些的價格掛買單
+   + 盡量減少損失
++ 產電量 = 耗電量
+   + 不做任何操作

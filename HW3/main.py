@@ -93,8 +93,8 @@ if __name__ == "__main__":
     data=[]
     # print(date)
     for i in range(24):
-        # if c_pred[i]>=1.75:
-        #     c_pred[i]*=1.5
+        if c_pred[i]>=1.75:
+            c_pred[i]*=1.5
 
         if g_pred[i] > c_pred[i]:
             # Generation more
